@@ -28,28 +28,33 @@ const steps = [
 
 export default function Timeline() {
   return (
-    <div className="mx-auto max-w-(--breakpoint-sm) px-6 py-12 md:py-20">
-      <div className="relative ml-6">
-        {/* Timeline line */}
-        <div className="absolute inset-y-0 left-0 border-l-2" />
-
-        {steps.map(({ title, description }, index) => (
-          <div className="relative pb-10 pl-10 last:pb-0" key={index}>
-            {/* Timeline Icon */}
-            <div className="absolute left-px flex h-9 w-9 -translate-x-1/2 items-center justify-center rounded-full border-2 border-muted-foreground/40 bg-accent ring-8 ring-background">
-              <span className="font-semibold text-lg">{index + 1}</span>
-            </div>
-
-            {/* Content */}
-            <div className="space-y-2 pt-1">
-              <h3 className="font-semibold text-xl tracking-[-0.01em]">
-                {title}
-              </h3>
-              <p className="text-muted-foreground">{description}</p>
-            </div>
+    <div className="space-y-0">
+      {steps.map(({ title, description }, index) => (
+        <div
+          key={index}
+          className="group flex gap-8 pb-12 last:pb-0"
+        >
+          {/* Number column */}
+          <div className="flex flex-col items-center shrink-0">
+            <span className="font-mono text-4xl font-bold text-emerald-600/20 dark:text-emerald-400/20 group-hover:text-emerald-600/60 dark:group-hover:text-emerald-400/60 transition-colors duration-300 leading-none select-none">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+            {index < steps.length - 1 && (
+              <div className="mt-3 w-px flex-1 bg-border/60 min-h-[32px]" />
+            )}
           </div>
-        ))}
-      </div>
+
+          {/* Content */}
+          <div className="pb-2 pt-1">
+            <h3 className="text-lg font-bold tracking-tight mb-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors duration-300">
+              {title}
+            </h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {description}
+            </p>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

@@ -14,7 +14,6 @@ import HomeIcon from "./ui/home-icon";
 import PenIcon from "./ui/pen-icon";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
-// Navigation links array to be used in both desktop and mobile menus
 const navigationLinks = [
   { href: "/", label: <HomeIcon />, text: "Home" },
   { href: "/website", label: <PenIcon />, text: "Edit website" },
@@ -23,17 +22,15 @@ const navigationLinks = [
 
 export default function NavBar() {
   return (
-    <header className="border-b mt-1 md:px-36 px-4 transition-all">
-      <div className="relative z-10 flex h-16 items-center">
+    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-md md:px-36 px-4 transition-all">
+      <div className="relative z-10 flex h-14 items-center">
+
+        {/* Left: logo + mobile menu */}
         <div className="flex items-center gap-2">
           {/* Mobile menu trigger */}
           <Popover>
             <PopoverTrigger asChild>
-              <Button
-                className="group size-8 md:hidden"
-                size="icon"
-                variant="ghost"
-              >
+              <Button className="group size-8 md:hidden" size="icon" variant="ghost">
                 <svg
                   className="pointer-events-none"
                   fill="none"
@@ -63,43 +60,42 @@ export default function NavBar() {
             </PopoverTrigger>
             <PopoverContent align="start" className="w-48 p-1 md:hidden">
               <NavigationMenu className="max-w-none *:w-full">
-                <NavigationMenuList className="flex-col items-start  gap-0 md:gap-2">
-                  {navigationLinks.map((link, index) => {
-                    return (
-                      <NavigationMenuItem className="w-full" key={index}>
-                        <NavigationMenuLink
-                          className="flex-row items-center gap-2 py-1.5"
-                          href={link.href}
-                        >
-                          <span className="flex gap-2.5 items-center">
-                            {link.label}
-                            {link.text}
-                          </span>
-                        </NavigationMenuLink>
-                      </NavigationMenuItem>
-                    );
-                  })}
+                <NavigationMenuList className="flex-col items-start gap-0 md:gap-2">
+                  {navigationLinks.map((link, index) => (
+                    <NavigationMenuItem className="w-full" key={index}>
+                      <NavigationMenuLink
+                        className="flex-row items-center gap-2 py-1.5"
+                        href={link.href}
+                      >
+                        <span className="flex gap-2.5 items-center">
+                          {link.label}
+                          {link.text}
+                        </span>
+                      </NavigationMenuLink>
+                    </NavigationMenuItem>
+                  ))}
                   <ProfileBtn isMobile />
                 </NavigationMenuList>
               </NavigationMenu>
             </PopoverContent>
           </Popover>
-          {/* Left side */}
-          <Link
-            className="text-primary tracking-wide font-semibold hover:text-primary/90"
-            href="/"
-          >
-            Wrkks
+
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 group">
+            <span className="size-2 rounded-full bg-emerald-500 group-hover:scale-125 transition-transform duration-200" />
+            <span className="font-mono text-sm font-semibold tracking-tight text-foreground">
+              Portfolio AI
+            </span>
           </Link>
         </div>
 
-        {/* Center navigation */}
+        {/* Center nav (desktop) */}
         <NavigationMenu className="max-md:hidden absolute left-1/2 -translate-x-1/2">
-          <NavigationMenuList className="flex gap-4">
+          <NavigationMenuList className="flex gap-1">
             {navigationLinks.map((link, index) => (
               <NavigationMenuItem key={String(index)}>
                 <NavigationMenuLink
-                  className="py-1.5 font-medium text-muted-foreground hover:text-primary"
+                  className="px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground rounded-md hover:bg-accent transition-colors"
                   href={link.href}
                 >
                   {link.label}
@@ -111,7 +107,7 @@ export default function NavBar() {
         </NavigationMenu>
 
         {/* Right side */}
-        <div className="ml-auto flex items-center gap-4">
+        <div className="ml-auto flex items-center gap-3">
           <ThemeToggle />
           <SignUpBtn />
         </div>

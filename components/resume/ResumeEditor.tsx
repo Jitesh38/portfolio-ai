@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useResumeStore } from "@/hooks/stores/useResumeStore";
 import { CustomSection, Education, Experience, Project } from "@/lib/types";
 import { Plus, X } from "lucide-react";
+import AISummaryBtn from "./AISummaryBtn";
+import AITaglineBtn from "./AITaglineBtn";
 import EditSkillsDialog from "./EditSkillsDialog";
 
 export const ResumeEditor = () => {
@@ -111,6 +113,9 @@ export const ResumeEditor = () => {
                     updatePersonalInfo({ title: e.target.value })
                   }
                 />
+                <div className="mt-2">
+                  <AITaglineBtn />
+                </div>
               </div>
               <div>
                 <label className={labelClass}>Location</label>
@@ -125,7 +130,10 @@ export const ResumeEditor = () => {
             </div>
 
             <div className="mb-4">
-              <label className={labelClass}>Short About</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className={labelClass}>Short About</label>
+                <AISummaryBtn />
+              </div>
               <Textarea
                 className="min-h-25"
                 placeholder="Highly motivated multi-planet entrepreneur with a proven track record of disrupting industries that didn't even know they were broken. Expert in first-principles thinking, 80-hour work weeks, and naming children after Wi-Fi passwords. Currently seeking to move humanity's 'production' environment to Mars because Earth's 'staging' server is getting too crowded."

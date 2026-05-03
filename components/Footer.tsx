@@ -1,43 +1,33 @@
-import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import AnimatedIconButton from "./buttons/AnimatedBtn";
 import GitHubIcon from "./ui/github-icon";
-import TwitterIcon from "./ui/twitter-x-icon";
 
-const Footer = () => {
-  return (
-    <div className="flex flex-col w-full">
-      <footer className="border-t">
-        <div className="max-w-(--breakpoint-xl) mx-auto">
-          <Separator />
-          <div className="py-6 flex flex-col-reverse sm:flex-row items-center justify-between gap-x-2 gap-y-5 px-6 xl:px-0">
-            {/* Copyright */}
-            <span className="text-muted-foreground">
-              &copy; {new Date().getFullYear()}{" "}
-              <Link href="/" target="_blank">
-                Wrkks
-              </Link>
-              . All rights reserved.
-            </span>
+const Footer = () => (
+  <footer className="w-full border-t border-border/60">
+    <div className="max-w-screen-xl mx-auto px-6 xl:px-0">
+      <div className="py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
 
-            <div className="flex items-center gap-2">
-              <Link href="https://github.com/dev-o-los/wrkks" target="_blank">
-                <AnimatedIconButton
-                  icon={<GitHubIcon />}
-                  className="rounded-full size-9"
-                />
-              </Link>
-              <Link href="https://x.com/utkarshdev_" target="_blank">
-                <AnimatedIconButton icon={<TwitterIcon />}>
-                  @utkarshdev_
-                </AnimatedIconButton>
-              </Link>
-            </div>
-          </div>
+        {/* Brand */}
+        <div className="flex items-center gap-2">
+          <span className="size-1.5 rounded-full bg-emerald-500" />
+          <span className="font-mono text-sm font-semibold tracking-tight">
+            Portfolio AI
+          </span>
+          <span className="text-border mx-2">·</span>
+          <span className="text-xs text-muted-foreground">
+            &copy; {new Date().getFullYear()} All rights reserved.
+          </span>
         </div>
-      </footer>
+
+        {/* Links */}
+        <div className="flex items-center gap-1">
+          <Link href="https://github.com/Jitesh38/portfolio-ai" target="_blank">
+            <AnimatedIconButton icon={<GitHubIcon />} className="rounded-full size-9" />
+          </Link>
+        </div>
+      </div>
     </div>
-  );
-};
+  </footer>
+);
 
 export default Footer;

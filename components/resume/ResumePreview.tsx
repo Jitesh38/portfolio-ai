@@ -11,6 +11,10 @@ import { NotFoundPage } from "../NotFound";
 import EyeIcon from "../ui/eye-icon";
 import PenIcon from "../ui/pen-icon";
 import WebsiteStyleSelector from "../WebsiteStylesSelector";
+import AIATSCheck from "./AIATSCheck";
+import AICoverLetter from "./AICoverLetter";
+import AIEnhanceTips from "./AIEnhanceTips";
+import AIJobMatch from "./AIJobMatch";
 import BentoResume from "./BentoResumeCard";
 import { ResumeCard } from "./ResumeCard";
 import { ResumeEditor } from "./ResumeEditor";
@@ -49,6 +53,10 @@ export default function ResumePreview() {
           Edit
         </AnimatedIconButton>
         <WebsiteStyleSelector />
+        <AIEnhanceTips />
+        <AIJobMatch />
+        <AIATSCheck />
+        <AICoverLetter />
       </div>
       <div className="min-h-screen justify-center flex py-6 px-4">
         {isEditMode ? (

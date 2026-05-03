@@ -1,77 +1,109 @@
-import { Sparkles } from "lucide-react";
-import Link from "next/link";
+import { FileText, Globe, Layers, Zap } from "lucide-react";
 import HomeActionBtn from "./buttons/BuildMyWebsiteBtn";
 import ShareBtn from "./buttons/ShareBtn";
 import Timeline from "./timeline";
 
-const Hero = () => (
-  <div className="relative flex flex-col gap-16 items-center justify-center px-6 py-12 overflow-hidden">
-    {/* Dynamic Background Blur */}
-    <div className="absolute inset-0 pointer-events-none -z-10">
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-75 h-75 md:w-150 md:h-150 bg-blue-500/10 dark:bg-white/5 blur-[120px] rounded-full" />
-    </div>
+const features = [
+  { icon: Zap, label: "AI-Powered", desc: "Instant extraction" },
+  { icon: Layers, label: "2 Styles", desc: "Simple & Bento" },
+  { icon: Globe, label: "One Click", desc: "Publish instantly" },
+  { icon: FileText, label: "PDF Import", desc: "LinkedIn or resume" },
+];
 
-    <div className="relative z-10 text-center max-w-4xl mx-auto">
-      {/* Glass Badge */}
-      <div className="inline-flex items-center backdrop-blur-md bg-black/3 dark:bg-white/5 border border-black/10 dark:border-white/15 rounded-full px-4 py-1.5 transition-all hover:border-black/20 dark:hover:border-white/25">
-        <Link
-          href="#"
-          className="flex items-center text-xs md:text-sm font-medium text-slate-600 dark:text-white/80 hover:text-black dark:hover:text-white transition-colors"
-        >
-          <Sparkles className="mr-2 size-3.5 text-blue-500" />
-          LinkedIn to Website With Wrkks
-        </Link>
+const Hero = () => (
+  <div className="w-full">
+    {/* ── Hero ─────────────────────────────────────────── */}
+    <section className="relative flex flex-col items-center justify-center min-h-[92vh] px-6 py-28 overflow-hidden">
+
+      {/* Grid background */}
+      <div
+        className="absolute inset-0 -z-10 opacity-40 dark:opacity-20"
+        style={{
+          backgroundImage:
+            "linear-gradient(var(--color-border) 1px, transparent 1px), linear-gradient(90deg, var(--color-border) 1px, transparent 1px)",
+          backgroundSize: "48px 48px",
+        }}
+      />
+
+      {/* Ambient glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-emerald-500/10 dark:bg-emerald-400/6 blur-[120px] rounded-full -z-10 pointer-events-none" />
+
+      {/* Label */}
+      <div
+        className="animate-fade-in font-mono text-[11px] tracking-[0.35em] uppercase text-emerald-600 dark:text-emerald-400 mb-10 flex items-center gap-2"
+        style={{ animationDelay: "0ms" }}
+      >
+        <span className="inline-block size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+        Portfolio AI — Resume to Website
       </div>
 
-      {/* Gradient Headline */}
-      <h1 className="mt-8 text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight leading-[1.1] text-slate-900 dark:text-transparent dark:bg-clip-text dark:bg-linear-to-b dark:from-white dark:to-white/60">
-        Turn your Resume into a <br className="hidden md:block" />
-        <span className="text-blue-600 dark:text-blue-400">
-          Stunning Website
-        </span>{" "}
-        in seconds.
+      {/* Headline */}
+      <h1
+        className="animate-slide-up text-5xl sm:text-7xl md:text-[88px] font-bold tracking-[-0.03em] text-center leading-[0.92] max-w-4xl text-foreground mb-8"
+        style={{ animationDelay: "80ms" }}
+      >
+        Turn Your Resume
+        <br />
+        Into a{" "}
+        <span className="text-emerald-600 dark:text-emerald-400">
+          Stunning
+        </span>
+        <br />
+        Website.
       </h1>
 
-      {/* Content-Aware Paragraph */}
-      <p className="mt-6 text-base md:text-lg text-slate-600 dark:text-white/70 max-w-2xl mx-auto leading-relaxed">
-        Stop wrestling with website builders. Drop your LinkedIn PDF or upload a
-        resume PDF, and we&apos;ll instantly generate a professional,
-        high-converting personal site that gets you hired.
+      {/* Subtext */}
+      <p
+        className="animate-slide-up text-base md:text-lg text-muted-foreground text-center max-w-lg mb-12 leading-relaxed"
+        style={{ animationDelay: "160ms" }}
+      >
+        Stop wrestling with website builders. Drop your LinkedIn PDF or resume
+        — we generate a professional personal site in seconds. No coding
+        required.
       </p>
 
-      {/* Responsive CTA Buttons */}
-      {/* Responsive CTA Container */}
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10 w-full max-w-md mx-auto md:max-w-none">
-        {/* Primary Action */}
-        <div className="w-full md:w-auto">
-          <HomeActionBtn />
-        </div>
+      {/* CTA Buttons */}
+      <div
+        className="animate-slide-up flex flex-col sm:flex-row items-center gap-4 mb-20"
+        style={{ animationDelay: "240ms" }}
+      >
+        <HomeActionBtn />
+        <ShareBtn />
+      </div>
 
-        {/* Secondary Action */}
-        <div className="w-full md:w-auto">
-          <ShareBtn />
+      {/* Feature strip */}
+      <div
+        className="animate-slide-up w-full max-w-2xl border-t border-border/60 pt-8"
+        style={{ animationDelay: "320ms" }}
+      >
+        <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-5">
+          {features.map(({ icon: Icon, label, desc }) => (
+            <div key={label} className="flex items-center gap-3">
+              <div className="size-8 rounded-md bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                <Icon className="size-4 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div>
+                <div className="text-sm font-semibold leading-tight">{label}</div>
+                <div className="text-[11px] text-muted-foreground font-mono tracking-wide">{desc}</div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
-    </div>
+    </section>
 
-    {/* Product Preview Video */}
-    <div className="mt-6 w-full flex justify-center px-0 md:px-4">
-      <div className="relative rounded-2xl overflow-hidden border border-black/10 dark:border-white/10 shadow-[0_0_50px_-12px_rgba(0,0,0,0.3)] dark:shadow-[0_0_50px_-12px_rgba(255,255,255,0.1)] w-full max-w-5xl mx-auto">
-        <video
-          className="w-full object-cover scale-[1.01]"
-          autoPlay
-          loop
-          muted
-          playsInline
-          poster="/video-poster.jpg"
-        >
-          <source src="/og-vid.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
+    {/* ── How it works ─────────────────────────────────── */}
+    <section className="border-t border-border/50 px-6 py-24">
+      <div className="max-w-screen-sm mx-auto">
+        <p className="font-mono text-[11px] tracking-[0.35em] uppercase text-emerald-600 dark:text-emerald-400 mb-3">
+          ◈ How it works
+        </p>
+        <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-16">
+          Five steps to launch.
+        </h2>
+        <Timeline />
       </div>
-    </div>
-
-    <Timeline />
+    </section>
   </div>
 );
 

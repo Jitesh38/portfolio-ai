@@ -384,7 +384,7 @@ export default function BentoResume({
         </div>
 
         <footer className="mt-12 text-center text-neutral-500 dark:text-neutral-600 text-xs">
-          <p>© 2026 {personalInfo?.name} • Built with wrkks.site</p>
+          <p>© 2026 {personalInfo?.name} • Built with Portfolio AI</p>
         </footer>
       </div>
 

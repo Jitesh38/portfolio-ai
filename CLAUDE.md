@@ -1,676 +1,292 @@
-# 🚀 Wrkks — Complete Codebase Analysis
+# Portfolio AI — Complete Codebase Analysis
 
-> **Wrkks** is a web app that turns your resume (PDF or LinkedIn export) into a stunning personal website in seconds — no coding required.
->
-> **Live URL:** [https://wrkks.site](https://wrkks.site)
-
----
-
-## 📚 Table of Contents
-
-1. [What Does This App Do?](#1-what-does-this-app-do)
-2. [Tech Stack](#2-tech-stack)
-3. [Next.js Concepts You'll See Here](#3-nextjs-concepts-youll-see-here)
-4. [Project Structure](#4-project-structure)
-5. [Routing — How Pages Work](#5-routing--how-pages-work)
-6. [API Routes — The Backend](#6-api-routes--the-backend)
-7. [Components — The UI Building Blocks](#7-components--the-ui-building-blocks)
-8. [State Management (Zustand)](#8-state-management-zustand)
-9. [Database Layer (Supabase)](#9-database-layer-supabase)
-10. [Authentication (Clerk)](#10-authentication-clerk)
-11. [Data Flow — From PDF to Website](#11-data-flow--from-pdf-to-website)
-12. [Providers — Wrapping the App](#12-providers--wrapping-the-app)
-13. [Styling — Tailwind CSS v4](#13-styling--tailwind-css-v4)
-14. [SEO & Metadata](#14-seo--metadata)
-15. [Environment Variables](#15-environment-variables)
-16. [Key Files Reference](#16-key-files-reference)
+> **Portfolio AI** is a web app that turns your resume (PDF or LinkedIn export) into a stunning personal website in seconds — no coding required.
 
 ---
 
 ## 1. What Does This App Do?
 
-Wrkks follows this user journey:
-
 ```
 1. User signs up / logs in (via Clerk)
 2. User uploads a Resume PDF (or LinkedIn PDF export)
 3. The PDF is parsed into raw text (via pdf-parse-new)
-4. The raw text is sent to an AI model (OpenAI via OpenRouter) that structures it into JSON
+4. The raw text is sent to a local AI (Ollama) that structures it into JSON
 5. The structured JSON is stored in Zustand (client state) and displayed as a website preview
-6. User can edit the resume data, choose a website style ("simple" or "bento")
-7. User publishes the site — data is saved to Supabase database
-8. The site goes live at wrkks.site/<username>
+6. User can use AI tools (summary writer, tagline generator, job match, ATS check, cover letter)
+7. User edits resume data, chooses a website style ("simple" or "bento")
+8. User publishes the site — data is saved to Supabase database
+9. The site goes live at portfolio-ai.site/<username>
 ```
 
 ---
 
 ## 2. Tech Stack
 
-| Technology | Purpose | File(s) |
-|---|---|---|
-| **Next.js 16** | Full-stack React framework (pages + API routes) | [next.config.ts](file:///d:/My%20Learnings/Next%20js/wrkks/next.config.ts) |
-| **React 19** | UI library | [package.json](file:///d:/My%20Learnings/Next%20js/wrkks/package.json) |
-| **TypeScript** | Type-safe JavaScript | [tsconfig.json](file:///d:/My%20Learnings/Next%20js/wrkks/tsconfig.json) |
-| **Tailwind CSS v4** | Utility-first CSS styling | [globals.css](file:///d:/My%20Learnings/Next%20js/wrkks/app/globals.css), [postcss.config.mjs](file:///d:/My%20Learnings/Next%20js/wrkks/postcss.config.mjs) |
-| **Clerk** | Authentication (sign-up, login, user management) | `@clerk/nextjs` |
-| **PostgreSQL** | Database (stores users + resumes) | `pg` via `lib/db/postgres.ts` |
-| **Ollama (Local AI)** | AI-powered resume text → structured JSON | `app/api/extract-info/route.ts` |
-| **pdf-parse-new** | Extract text from PDF files | `app/api/parse-resume/route.ts` |
-| **TanStack React Query** | Server state management (data fetching, caching) | `providers/tanstack-provider.tsx` |
-| **Zustand** | Client-side state management (resume data in memory) | `hooks/stores/useResumeStore.ts` |
-| **Motion (Framer Motion)** | Animations | Various components |
-| **Lucide React** | Icon library | Various components |
-| **next-themes** | Dark/Light mode toggle | `providers/theme-provider.tsx` |
-| **Vercel Analytics** | Usage tracking | `layout.tsx` |
-| **spotify-url-info** | Fetch Spotify track/album preview data | `app/api/spotify/route.ts` |
+| Technology | Purpose |
+|---|---|
+| **Next.js 16** | Full-stack React framework (App Router) |
+| **React 19** | UI library |
+| **TypeScript** | Type-safe JavaScript |
+| **Tailwind CSS v4** | Utility-first CSS styling |
+| **Clerk** | Authentication (sign-up, login, user management) |
+| **Supabase** | PostgreSQL database (stores users + resumes) |
+| **Ollama (Local AI)** | All AI features — resume structuring, summary, tips, job match, ATS, cover letter |
+| **pdf-parse-new** | Extract text from PDF files |
+| **TanStack React Query** | Server state management |
+| **Zustand** | Client-side state (resume data + style) |
+| **Motion** | Animations |
+| **Lucide React** | Icon library |
+| **next-themes** | Dark/Light mode toggle |
+| **Vercel Analytics** | Usage tracking |
+| **spotify-url-info** | Spotify track/album preview data |
 
 ---
 
-## 3. Next.js Concepts You'll See Here
-
-### 🔹 App Router
-Next.js 13+ uses the **App Router** (folder `app/`). Every folder inside `app/` is a route. Files named `page.tsx` become the page for that route.
+## 3. Project Structure
 
 ```
-app/
-├── page.tsx          → renders at "/"
-├── upload/page.tsx   → renders at "/upload"
-└── website/page.tsx  → renders at "/website"
-```
-
-### 🔹 `layout.tsx` — Shared UI Wrapper
-A `layout.tsx` wraps all pages below it with common UI. The root `app/layout.tsx` sets up providers, fonts, metadata, and wraps **every single page**.
-
-### 🔹 Route Groups `(name)`
-Folders wrapped in parentheses like `(main)` and `(user)` are **route groups**. They **don't** create URL segments — they just help organize code.
-
-```
-app/(main)/page.tsx     → URL is "/"         (NOT "/main")
-app/(user)/[slug]/page.tsx → URL is "/<slug>"  (NOT "/user/<slug>")
-```
-
-### 🔹 Dynamic Routes `[param]`
-Square brackets make a **dynamic route**. `[slug]` matches any value:
-
-```
-app/(user)/[slug]/page.tsx → matches "/john", "/jane", "/anything"
-```
-
-The value is accessible via `useParams()` hook.
-
-### 🔹 `"use client"` vs Server Components
-- **Server Components** (default): Run on the server. Can do database queries, file reads, etc. Cannot use React hooks (`useState`, `useEffect`).
-- **Client Components** (`"use client"` at the top): Run in the browser. Can use hooks, event handlers, browser APIs.
-
-### 🔹 `"use server"` — Server Actions
-Functions marked `"use server"` run on the server but can be called from client components. Used in `lib/server/actions.ts`.
-
-### 🔹 API Routes (`route.ts`)
-Files named `route.ts` inside `app/api/` create backend API endpoints. They export functions like `GET()`, `POST()`, etc.
-
-```
-app/api/parse-resume/route.ts → POST /api/parse-resume
-app/api/spotify/route.ts      → GET  /api/spotify
-```
-
----
-
-## 4. Project Structure
-
-```
-wrkks/
-├── app/                          # 🏗️ All pages and API routes
-│   ├── (main)/                   # Route group: pages WITH navbar
-│   │   ├── layout.tsx            # Adds <NavBar /> above all (main) pages
-│   │   ├── page.tsx              # Home page ("/") — shows Hero + Footer
+portfolio-ai/
+├── app/
+│   ├── (main)/
+│   │   ├── layout.tsx            # Adds <NavBar /> to all main pages
+│   │   ├── page.tsx              # Home "/" — Hero + Footer
 │   │   ├── upload/page.tsx       # "/upload" — PDF upload page
-│   │   └── website/page.tsx      # "/website" — resume editor + preview + publish
-│   ├── (user)/                   # Route group: pages WITHOUT navbar
+│   │   └── website/page.tsx      # "/website" — editor + preview + publish
+│   ├── (user)/
 │   │   ├── layout.tsx            # Minimal layout (no NavBar)
 │   │   └── [slug]/page.tsx       # "/<username>" — public portfolio page
-│   ├── api/                      # 🔌 Backend API endpoints
-│   │   ├── parse-resume/route.ts # POST: Extracts text from uploaded PDF
-│   │   ├── extract-info/route.ts # POST: AI structures resume text → JSON
-│   │   ├── spotify/route.ts      # GET:  Fetches Spotify track preview data
-│   │   ├── user/route.ts         # GET:  Gets current user's data
-│   │   ├── user/update/route.ts  # POST: Updates user fields (username, etc.)
-│   │   ├── user/publish-resume/  # POST: Saves resume to DB & sets site live
-│   │   └── user-image/route.ts   # GET:  Gets user's profile pic from Clerk
-│   ├── layout.tsx                # 🌐 ROOT LAYOUT — wraps EVERYTHING
-│   ├── globals.css               # 🎨 Global styles + Tailwind theme tokens
-│   ├── robots.ts                 # 🤖 robots.txt generation for SEO
-│   └── sitemap.ts                # 🗺️ sitemap.xml generation for SEO
+│   ├── api/
+│   │   ├── parse-resume/route.ts # POST: PDF → raw text (pdf-parse-new)
+│   │   ├── extract-info/route.ts # POST: raw text → structured JSON (Ollama)
+│   │   ├── ai/
+│   │   │   ├── generate-summary/route.ts  # POST: AI writes professional bio
+│   │   │   ├── enhance-resume/route.ts    # POST: AI scores + suggests improvements
+│   │   │   ├── job-match/route.ts         # POST: AI matches resume vs job description
+│   │   │   ├── generate-taglines/route.ts # POST: AI generates 5 headline taglines
+│   │   │   ├── ats-check/route.ts         # POST: AI checks ATS compatibility
+│   │   │   └── cover-letter/route.ts      # POST: AI writes tailored cover letter
+│   │   ├── spotify/route.ts      # GET: Spotify track preview data
+│   │   ├── user/route.ts         # GET: current user data from Supabase
+│   │   ├── user/update/route.ts  # POST: update user fields
+│   │   ├── user/publish-resume/  # POST: save resume + set islive=true
+│   │   └── user-image/route.ts   # GET: profile pic from Clerk
+│   ├── layout.tsx                # Root layout — providers, fonts, metadata
+│   ├── globals.css               # Tailwind theme tokens + custom animations
+│   ├── robots.ts                 # robots.txt for SEO
+│   └── sitemap.ts                # sitemap.xml for SEO
 │
-├── components/                   # 🧩 Reusable UI components
-│   ├── Hero.tsx                  # Landing page hero section
-│   ├── Footer.tsx                # Site footer with social links
-│   ├── nav-bar.tsx               # Top navigation bar (desktop + mobile)
-│   ├── FileUpload.tsx            # Drag-and-drop PDF upload area
-│   ├── SyncUser.tsx              # Server component: syncs Clerk user → Supabase
+├── components/
+│   ├── Hero.tsx                  # Landing page — editorial layout, no video
+│   ├── Footer.tsx                # Footer with brand mark + GitHub link
+│   ├── nav-bar.tsx               # Sticky frosted-glass navbar
+│   ├── FileUpload.tsx            # Drag-and-drop PDF upload
+│   ├── SyncUser.tsx              # Server: syncs Clerk user → Supabase on login
 │   ├── ThemeToggle.tsx           # Dark/light mode switcher
 │   ├── DomainInputField.tsx      # Username/domain input on website page
-│   ├── WebsiteStylesSelector.tsx # Toggle between "simple" and "bento" styles
-│   ├── spotify-card.tsx          # Spotify embed card widget
-│   ├── timeline.tsx              # "How it works" timeline on landing page
-│   ├── NotFound.tsx              # 404-style not found component
-│   ├── loading.tsx               # Loading spinner component
+│   ├── WebsiteStylesSelector.tsx # Toggle "simple" / "bento"
+│   ├── spotify-card.tsx          # Spotify embed widget
+│   ├── timeline.tsx              # "How it works" numbered steps
+│   ├── NotFound.tsx              # 404 component
+│   ├── loading.tsx               # Loading spinner
 │   ├── user-menu.tsx             # User dropdown menu
-│   ├── buttons/                  # 🔘 Button components
-│   │   ├── GenerateBtn.tsx       # "Generate Site" — triggers PDF parse + AI
-│   │   ├── PublishBtn.tsx        # "Publish" / "Unpublish" / "Visit Site"
+│   ├── buttons/
+│   │   ├── GenerateBtn.tsx       # Triggers PDF parse → AI → navigate to /website
+│   │   ├── PublishBtn.tsx        # Publish / Unpublish / Visit Site
 │   │   ├── BuildMyWebsiteBtn.tsx # CTA on home page
-│   │   ├── ShareBtn.tsx          # Share link button
+│   │   ├── ShareBtn.tsx          # Share portfolio URL
 │   │   ├── ProfileBtn.tsx        # Profile avatar button
-│   │   ├── SignUpBtn.tsx         # Sign up button
-│   │   ├── StatusBtn.tsx         # Live/offline status badge
+│   │   ├── SignUpBtn.tsx         # Sign up / UserButton
+│   │   ├── StatusBtn.tsx         # Live/Offline badge
 │   │   ├── AnimatedBtn.tsx       # Reusable animated icon button
-│   │   ├── InfoBtn.tsx           # Info/help dialog button
+│   │   ├── InfoBtn.tsx           # LinkedIn export guide dialog
 │   │   └── BentoThemeToggleBtn.tsx
-│   ├── resume/                   # 📄 Resume display & editing
-│   │   ├── ResumePreview.tsx     # Preview/Edit toggle container
+│   ├── resume/
+│   │   ├── ResumePreview.tsx     # Preview/Edit toggle + AI tools toolbar
 │   │   ├── ResumeCard.tsx        # "Simple" style portfolio layout
 │   │   ├── BentoResumeCard.tsx   # "Bento" grid style portfolio layout
-│   │   ├── ResumeEditor.tsx      # Edit form for resume fields
+│   │   ├── ResumeEditor.tsx      # Edit form for all resume sections
 │   │   ├── ResumeImage.tsx       # Profile image from Clerk
-│   │   ├── EditDomainDialog.tsx  # Dialog to edit custom domain
-│   │   └── EditSkillsDialog.tsx  # Dialog to edit skills
-│   └── ui/                       # 🎨 Shadcn/Radix primitive UI components
-│       ├── button.tsx, accordion.tsx, tabs.tsx, toast.tsx, etc.
-│       └── (various icon components)
+│   │   ├── EditDomainDialog.tsx  # Edit custom domain dialog
+│   │   ├── EditSkillsDialog.tsx  # Edit skills dialog
+│   │   ├── AISummaryBtn.tsx      # AI: generate professional bio
+│   │   ├── AIEnhanceTips.tsx     # AI: score + improvement tips per section
+│   │   ├── AIJobMatch.tsx        # AI: match resume vs job description
+│   │   ├── AITaglineBtn.tsx      # AI: generate 5 headline taglines
+│   │   ├── AIATSCheck.tsx        # AI: ATS compatibility score + issues
+│   │   └── AICoverLetter.tsx     # AI: write + download tailored cover letter
+│   └── ui/                       # shadcn/Radix primitive components
 │
-├── hooks/                        # 🪝 Custom React hooks
-│   ├── use-file-upload.ts        # File upload logic (drag & drop, validation)
+├── hooks/
+│   ├── use-file-upload.ts        # Drag & drop, validation logic
 │   └── stores/
-│       └── useResumeStore.ts     # Zustand store (resume data + website style)
+│       └── useResumeStore.ts     # Zustand store (resume, rawText, websiteStyle)
 │
-├── lib/                          # 📦 Shared utilities & data layer
-│   ├── types.ts                  # TypeScript interfaces (Resume, Experience, etc.)
+├── lib/
+│   ├── types.ts                  # Resume, Experience, Project, Education, Skills interfaces
 │   ├── helpers.ts                # normalizeResume(), normalizeUrl()
-│   ├── utils.ts                  # cn() — Tailwind class merger utility
+│   ├── utils.ts                  # cn() — Tailwind class merger
 │   ├── server/
 │   │   └── actions.ts            # Server Actions: parseResume(), structureResume()
-│   └── supabase/                 # 🗄️ Database client + queries
-│       ├── server.ts             # Server-side Supabase client (uses cookies)
-│       ├── client.ts             # Client-side Supabase client (browser)
-│       ├── middleware.ts         # Supabase middleware for session refresh
+│   └── supabase/
+│       ├── server.ts             # Server-side Supabase client + DB helpers
+│       ├── client.ts             # Browser-side Supabase client
+│       ├── middleware.ts         # Session middleware
 │       ├── resume/
 │       │   ├── getResume.ts      # Fetch resume by username (public pages)
-│       │   └── publishResume.ts  # Save resume to DB via API
+│       │   └── publishResume.ts  # Save resume to DB
 │       └── user/
-│           ├── getUserData.ts    # Server-side: get user by Clerk ID
-│           ├── getUserDataClient.ts # Client-side: fetch user via API
-│           ├── updateUserData.ts # Update user fields via API
-│           └── getShareUrl.ts    # Generate shareable URL
+│           ├── getUserData.ts    # Server: get user by Clerk ID
+│           ├── getUserDataClient.ts # Client: fetch via /api/user
+│           ├── updateUserData.ts # Client: update via /api/user/update
+│           └── getShareUrl.ts    # Generate portfolio-ai.site/<username> URL
 │
-├── providers/                    # 🎁 React context providers
-│   ├── tanstack-provider.tsx     # TanStack Query client provider
-│   └── theme-provider.tsx        # next-themes provider for dark mode
+├── providers/
+│   ├── tanstack-provider.tsx     # TanStack Query client
+│   └── theme-provider.tsx        # next-themes dark mode
 │
-├── public/                       # 📁 Static assets
-│   ├── og-image.png              # Open Graph preview image
-│   ├── og-vid.mp4                # Demo video on landing page
-│   ├── linkedin.gif              # LinkedIn export guide GIF
-│   └── apple-touch-icon.png      # iOS icon
-│
-├── package.json                  # Dependencies & scripts
-├── next.config.ts                # Next.js configuration
-├── tsconfig.json                 # TypeScript configuration
-└── .env.local                    # Environment variables (secrets)
+└── public/
+    ├── og-image.png
+    ├── og-vid.mp4
+    ├── linkedin.gif
+    └── apple-touch-icon.png
 ```
 
 ---
 
-## 5. Routing — How Pages Work
+## 4. Routing
 
-### Route Map
+| URL | File | Description |
+|-----|------|-------------|
+| `/` | `app/(main)/page.tsx` | Landing page |
+| `/upload` | `app/(main)/upload/page.tsx` | Upload PDF |
+| `/website` | `app/(main)/website/page.tsx` | Edit, preview & publish |
+| `/<username>` | `app/(user)/[slug]/page.tsx` | Public portfolio |
 
-| URL | File | Type | Description |
-|-----|------|------|-------------|
-| `/` | `app/(main)/page.tsx` | Server | Landing page with Hero + Footer |
-| `/upload` | `app/(main)/upload/page.tsx` | Server | Upload resume PDF page |
-| `/website` | `app/(main)/website/page.tsx` | Server | Edit, preview & publish your site |
-| `/<username>` | `app/(user)/[slug]/page.tsx` | Client | Public portfolio (visitors see this) |
+---
 
-### Route Group Layouts
+## 5. AI Features
 
-```mermaid
-graph TD
-    A["Root Layout (layout.tsx)"] --> B["(main) Layout — adds NavBar"]
-    A --> C["(user) Layout — no NavBar"]
-    B --> D["/ — Home"]
-    B --> E["/upload — Upload PDF"]
-    B --> F["/website — Editor + Publish"]
-    C --> G["/:slug — Public Portfolio"]
+All AI calls go to **Ollama** (local LLM) via `fetch` to `OLLAMA_URL/api/chat`.
+
+| Feature | API Route | Where in UI | Trigger |
+|---------|-----------|-------------|---------|
+| Resume Structuring | `POST /api/extract-info` | Auto on upload | GenerateBtn |
+| Summary Writer | `POST /api/ai/generate-summary` | Editor → Short About field | "Generate with AI" button |
+| Enhancement Tips | `POST /api/ai/enhance-resume` | /website toolbar | "AI Tips" button (emerald) |
+| Job Match Analyzer | `POST /api/ai/job-match` | /website toolbar | "Job Match" button (blue) |
+| Tagline Generator | `POST /api/ai/generate-taglines` | Editor → Headline field | "Generate Taglines" button (violet) |
+| ATS Checker | `POST /api/ai/ats-check` | /website toolbar | "ATS Check" button (orange) |
+| Cover Letter | `POST /api/ai/cover-letter` | /website toolbar | "Cover Letter" button (rose) |
+
+---
+
+## 6. Database (Supabase)
+
+Single `users` table:
+
+```sql
+CREATE TABLE public.users (
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  clerk_user_id TEXT UNIQUE NOT NULL,
+  username TEXT UNIQUE NOT NULL,
+  email TEXT NOT NULL,
+  resume JSONB,
+  style TEXT DEFAULT 'simple',
+  islive BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
 ```
 
-- **`(main)/layout.tsx`** — Wraps pages with `<NavBar />`. Used for the app's internal pages.
-- **`(user)/layout.tsx`** — Bare layout (no navbar). Used for public portfolio pages so visitors see a clean view.
+Two clients:
+- **Server** (`lib/supabase/server.ts`) — used in API routes, server components, server actions
+- **Browser** (`lib/supabase/client.ts`) — used in client components
 
 ---
 
-## 6. API Routes — The Backend
+## 7. Authentication (Clerk)
 
-All API routes live in `app/api/` and export HTTP method handlers.
-
-### `POST /api/parse-resume`
-**File:** [route.ts](file:///d:/My%20Learnings/Next%20js/wrkks/app/api/parse-resume/route.ts)
-
-- **Input:** PDF file via `FormData`
-- **What it does:** Uses `pdf-parse-new` (SmartPDFParser) to extract raw text from the PDF
-- **Output:** `{ text: "extracted text...", ... }`
-- **Size limit:** 5MB max
-
-### `POST /api/extract-info`
-**File:** [route.ts](file:///d:/My%20Learnings/Next%20js/wrkks/app/api/extract-info/route.ts)
-
-- **Input:** `{ text: "raw resume text" }`
-- **What it does:** Sends the text to an AI model (OpenAI via OpenRouter) with a detailed prompt asking it to structure the text into a specific JSON schema
-- **Output:** Structured `Resume` JSON (name, skills, experience, education, etc.)
-
-### `GET /api/spotify`
-**File:** [route.ts](file:///d:/My%20Learnings/Next%20js/wrkks/app/api/spotify/route.ts)
-
-- **Input:** `?url=<spotify-url>`
-- **What it does:** Fetches track/album preview data (title, artist, cover image, audio URL)
-- **Output:** `{ title, artist, image, link, audio }`
-
-### `GET /api/user`
-**File:** [route.ts](file:///d:/My%20Learnings/Next%20js/wrkks/app/api/user/route.ts)
-
-- **Input:** Optional `?fields=username,resume` query params
-- **What it does:** Gets the authenticated user's data from Supabase
-- **Output:** User data object
-
-### `POST /api/user/update`
-**File:** [route.ts](file:///d:/My%20Learnings/Next%20js/wrkks/app/api/user/update/route.ts)
-
-- **Input:** `{ username?: string, email?: string, resume?: object, ... }`
-- **What it does:** Updates user fields in Supabase. Has **username uniqueness check**.
-- **Output:** Updated user data
-
-### `POST /api/user/publish-resume`
-**File:** [route.ts](file:///d:/My%20Learnings/Next%20js/wrkks/app/api/user/publish-resume/route.ts)
-
-- **Input:** `{ resume: Resume | null }`
-- **What it does:** Saves the resume JSON to the database and sets `islive = true`. Passing `null` unpublishes.
-- **Output:** Updated user row
-
-### `GET /api/user-image`
-**File:** [route.ts](file:///d:/My%20Learnings/Next%20js/wrkks/app/api/user-image/route.ts)
-
-- **Input:** `?userId=<clerk-user-id>`
-- **What it does:** Fetches the user's profile picture URL from Clerk
-- **Output:** `{ imageUrl: "https://..." | null }`
-
----
-
-## 7. Components — The UI Building Blocks
-
-### Core Components
-
-| Component | File | Type | Purpose |
-|---|---|---|---|
-| `Hero` | [Hero.tsx](file:///d:/My%20Learnings/Next%20js/wrkks/components/Hero.tsx) | Server | Landing page hero — headline, CTA buttons, demo video, timeline |
-| `NavBar` | [nav-bar.tsx](file:///d:/My%20Learnings/Next%20js/wrkks/components/nav-bar.tsx) | Server | Top navigation with responsive mobile menu (Popover) |
-| `Footer` | [Footer.tsx](file:///d:/My%20Learnings/Next%20js/wrkks/components/Footer.tsx) | Server | Footer with GitHub and Twitter links |
-| `FileUpload` | [FileUpload.tsx](file:///d:/My%20Learnings/Next%20js/wrkks/components/FileUpload.tsx) | Client | Drag & drop PDF upload area with validation |
-| `SyncUser` | [SyncUser.tsx](file:///d:/My%20Learnings/Next%20js/wrkks/components/SyncUser.tsx) | Server | Auto-creates Supabase user record when someone signs up via Clerk |
-| `ThemeToggle` | [ThemeToggle.tsx](file:///d:/My%20Learnings/Next%20js/wrkks/components/ThemeToggle.tsx) | Client | Dark/light mode toggle button |
-
-### Resume Components
-
-| Component | File | Purpose |
-|---|---|---|
-| `ResumePreview` | [ResumePreview.tsx](file:///d:/My%20Learnings/Next%20js/wrkks/components/resume/ResumePreview.tsx) | Container that toggles between preview & edit mode |
-| `ResumeCard` | [ResumeCard.tsx](file:///d:/My%20Learnings/Next%20js/wrkks/components/resume/ResumeCard.tsx) | **"Simple" style** — clean, minimal portfolio layout |
-| `BentoResumeCard` | `BentoResumeCard.tsx` | **"Bento" style** — grid-based card layout |
-| `ResumeEditor` | `ResumeEditor.tsx` | Form to edit all resume sections |
-| `ResumeImage` | `ResumeImage.tsx` | Displays user's profile image from Clerk |
-
-### Key Button Components
-
-| Button | File | What It Does |
-|---|---|---|
-| `GenerateBtn` | [GenerateBtn.tsx](file:///d:/My%20Learnings/Next%20js/wrkks/components/buttons/GenerateBtn.tsx) | Triggers the full pipeline: parse PDF → AI structuring → navigate to `/website` |
-| `PublishBtn` | [PublishBtn.tsx](file:///d:/My%20Learnings/Next%20js/wrkks/components/buttons/PublishBtn.tsx) | Publishes/unpublishes the resume site. Uses TanStack `useMutation`. |
-| `ShareBtn` | `ShareBtn.tsx` | Copies the public URL to clipboard |
-| `StatusBtn` | `StatusBtn.tsx` | Shows "Live" or "Offline" badge |
+- `<ClerkProvider>` wraps the entire app in `app/layout.tsx`
+- `SyncUser` server component auto-creates a Supabase row on first login
+- API routes use `auth()` from `@clerk/nextjs/server` to verify identity
+- Profile images fetched via `/api/user-image` → Clerk `clerkClient()`
 
 ---
 
 ## 8. State Management (Zustand)
 
-**File:** [useResumeStore.ts](file:///d:/My%20Learnings/Next%20js/wrkks/hooks/stores/useResumeStore.ts)
-
-Zustand is a lightweight state management library. Think of it as a simpler alternative to Redux.
+**File:** `hooks/stores/useResumeStore.ts`
 
 ```typescript
-// The store holds:
 {
-  rawText: string;         // Raw text extracted from PDF
-  resume: Resume | null;   // Structured resume data
-  websiteStyle: "simple" | "bento";  // Chosen portfolio style
+  rawText: string;                      // Raw PDF text
+  resume: Resume | null;                // Structured resume JSON
+  websiteStyle: "simple" | "bento";    // Chosen portfolio style
 }
 ```
 
-### Key Actions
-| Action | What It Does |
-|---|---|
-| `setRawText(text)` | Stores the raw PDF text |
-| `setResume(resume)` | Stores the structured resume JSON |
-| `updatePersonalInfo(info)` | Partially updates personal info fields |
-| `updateSkills(skills)` | Updates skills |
-| `fetchResume()` | Fetches resume data from the database (via API) |
-| `setWebsiteStyle(style)` | Switches between "simple" and "bento", also saves to DB |
-| `reset()` | Clears all resume data |
-
-### Persistence
-The store uses Zustand's `persist` middleware to save data to **`localStorage`**, so your resume data survives page refreshes under the key `"resume-store"`.
+Persisted to `localStorage` under key `"resume-store"`. `rawText` is used by the ATS Checker.
 
 ---
 
-## 9. Database Layer (Supabase)
+## 9. Data Types
 
-Supabase provides a PostgreSQL database. The app has a single `users` table:
-
-### `users` Table Schema (inferred)
-
-| Column | Type | Description |
-|---|---|---|
-| `id` | uuid | Primary key |
-| `clerk_user_id` | text | Links to Clerk auth user |
-| `email` | text | User's email |
-| `username` | text (unique) | URL slug → `wrkks.site/<username>` |
-| `resume` | jsonb | Structured resume data (full JSON) |
-| `style` | text | "simple" or "bento" |
-| `islive` | boolean | Whether the site is published |
-| `created_at` | timestamp | When the user record was created |
-| `updated_at` | timestamp | Last update time |
-
-### Two Supabase Clients
-
-| Client | File | When to Use |
-|---|---|---|
-| **Server Client** | [server.ts](file:///d:/My%20Learnings/Next%20js/wrkks/lib/supabase/server.ts) | In server components, API routes, and server actions. Uses `cookies()` for auth. |
-| **Browser Client** | [client.ts](file:///d:/My%20Learnings/Next%20js/wrkks/lib/supabase/client.ts) | In client components. Uses `createBrowserClient()`. |
-
-### Data Access Functions
-
-| Function | File | Purpose |
-|---|---|---|
-| `getUserData(fields?)` | [getUserData.ts](file:///d:/My%20Learnings/Next%20js/wrkks/lib/supabase/user/getUserData.ts) | Server-side: fetches user data by Clerk user ID |
-| `getUserDataClient(fields?)` | [getUserDataClient.ts](file:///d:/My%20Learnings/Next%20js/wrkks/lib/supabase/user/getUserDataClient.ts) | Client-side: calls `/api/user` endpoint |
-| `updateUser(updates)` | [updateUserData.ts](file:///d:/My%20Learnings/Next%20js/wrkks/lib/supabase/user/updateUserData.ts) | Client-side: calls `/api/user/update` endpoint |
-| `publishResume(resume)` | [publishResume.ts](file:///d:/My%20Learnings/Next%20js/wrkks/lib/supabase/resume/publishResume.ts) | Client-side: calls `/api/user/publish-resume` |
-| `getUserWrkkDetails(username)` | [getResume.ts](file:///d:/My%20Learnings/Next%20js/wrkks/lib/supabase/resume/getResume.ts) | Server-side: fetches public resume by username |
-| `getShareUrl()` | [getShareUrl.ts](file:///d:/My%20Learnings/Next%20js/wrkks/lib/supabase/user/getShareUrl.ts) | Server action: generates `wrkks.site/<username>` URL |
-
----
-
-## 10. Authentication (Clerk)
-
-[Clerk](https://clerk.com) handles all auth. No custom login/signup forms are needed.
-
-### How It's Integrated
-
-1. **`<ClerkProvider>`** wraps the entire app in `app/layout.tsx`
-2. **`SyncUser`** component runs on every page load — checks if the Clerk user exists in Supabase, and creates a row if not
-3. API routes use `auth()` from `@clerk/nextjs/server` to get the current user ID
-4. `next.config.ts` allows images from `img.clerk.com` (for profile pictures)
-
-### Key Clerk Usage
-
-```typescript
-// Server-side: Get current user ID
-import { auth } from "@clerk/nextjs/server";
-const { userId } = await auth();
-
-// Server-side: Get full user object
-import { currentUser } from "@clerk/nextjs/server";
-const user = await currentUser();
-
-// Client-side: Get user info
-import { useUser } from "@clerk/nextjs";
-const { user, isLoaded } = useUser();
-```
-
----
-
-## 11. Data Flow — From PDF to Website
-
-```mermaid
-sequenceDiagram
-    participant U as User (Browser)
-    participant GA as GenerateBtn
-    participant SA as Server Action
-    participant PR as /api/parse-resume
-    participant EI as /api/extract-info
-    participant AI as OpenRouter AI
-    participant ZS as Zustand Store
-    participant PB as PublishBtn
-    participant DB as Supabase DB
-    participant VP as /username Page
-
-    U->>GA: Clicks "Generate Site" with PDF
-    GA->>SA: parseResume(file)
-    SA->>PR: POST FormData with PDF
-    PR->>PR: pdf-parse-new extracts text
-    PR-->>SA: { text: "raw resume text..." }
-    SA->>EI: POST { text }
-    EI->>AI: Resume text + JSON schema prompt
-    AI-->>EI: Structured JSON response
-    EI-->>SA: Resume JSON
-    SA->>SA: normalizeResume(data)
-    SA-->>GA: { rawText, structured }
-    GA->>ZS: setRawText + setResume
-    GA->>U: Navigate to /website
-
-    Note over U: User edits resume, picks style
-
-    U->>PB: Clicks "Publish"
-    PB->>DB: POST /api/user/publish-resume
-    DB-->>PB: Success (islive = true)
-
-    Note over VP: Visitors access wrkks.site/username
-    VP->>DB: getUserWrkkDetails(username)
-    DB-->>VP: { resume, style, clerk_user_id }
-    VP->>VP: Render ResumeCard or BentoResumeCard
-```
-
----
-
-## 12. Providers — Wrapping the App
-
-The root layout wraps all pages with multiple providers (outermost → innermost):
-
-```
-<ClerkProvider>                    ← Auth (outermost)
-  <TanStackQueryProvider>          ← Data fetching/caching
-    <ToastProvider>                ← Toast notifications
-      <AnchoredToastProvider>      ← Positioned toasts
-        <ThemeProvider>            ← Dark/light mode
-          <SyncUser />             ← Auto-sync Clerk → Supabase
-          <main>{children}</main>  ← Your actual page
-          <Analytics />            ← Vercel analytics
-        </ThemeProvider>
-      </AnchoredToastProvider>
-    </ToastProvider>
-  </TanStackQueryProvider>
-</ClerkProvider>
-```
-
-> [!NOTE]
-> **Why so many providers?** Each provider adds a specific capability to the entire app. This is a common pattern in React/Next.js apps. The ordering can matter — for example, `ClerkProvider` must be outermost because other providers might depend on auth state.
-
----
-
-## 13. Styling — Tailwind CSS v4
-
-The app uses **Tailwind CSS v4** with:
-
-- **`globals.css`** — Defines custom CSS variables (design tokens) for both light and dark themes using `oklch()` color format
-- **Shadcn UI** components — Pre-built accessible components using Radix UI primitives + Tailwind
-- **`cn()` utility** — Merges Tailwind classes safely (from `lib/utils.ts`):
-
-```typescript
-// Example: cn("px-4 py-2", isActive && "bg-blue-500", className)
-import { clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
-export function cn(...inputs) { return twMerge(clsx(inputs)); }
-```
-
-### Theme System
-Light/dark mode is controlled by `next-themes`. CSS variables change based on the `.dark` class:
-
-```css
-:root {
-  --background: oklch(0.9793 0.0029 84.56);  /* Light cream */
-  --foreground: oklch(0.145 0 0);              /* Near black */
-}
-.dark {
-  --background: oklch(0.145 0 0);              /* Near black */
-  --foreground: oklch(0.985 0 0);              /* Near white */
-}
-```
-
----
-
-## 14. SEO & Metadata
-
-The app has thorough SEO setup:
-
-| Feature | File | What It Does |
-|---|---|---|
-| **Metadata** | `app/layout.tsx` | Title, description, keywords, OpenGraph, Twitter cards |
-| **JSON-LD** | `app/layout.tsx` | Structured data for Google (SoftwareApplication schema) |
-| **robots.txt** | `app/robots.ts` | Tells search engines what to crawl |
-| **sitemap.xml** | `app/sitemap.ts` | Lists pages for search engine indexing |
-| **OpenGraph image** | `public/og-image.png` | Preview image when shared on social media |
-
----
-
-## 15. Environment Variables
-
-Required in `.env.local`:
-
-```bash
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=<your-supabase-project-url>
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=<your-supabase-anon-key>
-
-# Clerk Authentication
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=<your-clerk-publishable-key>
-CLERK_SECRET_KEY=<your-clerk-secret-key>
-
-# OpenRouter (AI for resume parsing)
-OPENROUTER_API_KEY=<your-openrouter-api-key>
-OPENROUTER_MODEL_NAME=<model-name, e.g., "google/gemini-2.0-flash-001">
-
-# App URL
-NEXT_PUBLIC_BASE_URL=http://localhost:3000  # or https://wrkks.site in production
-```
-
-> [!IMPORTANT]
-> Variables starting with `NEXT_PUBLIC_` are exposed to the browser. All other env vars are server-only (safe for secrets).
-
----
-
-## 16. Key Files Reference
-
-### TypeScript Interfaces
-
-**File:** [types.ts](file:///d:/My%20Learnings/Next%20js/wrkks/lib/types.ts)
+**File:** `lib/types.ts`
 
 ```typescript
 interface Resume {
-  personalInfo: PersonalInfo;  // name, title, email, location, social links
-  summary: string;             // About me paragraph
-  skills: Skills;              // languages, frameworksAndTools, softSkills
-  experience: Experience[];    // Work history with dates, bullets, technologies
-  projects: Project[];         // Project portfolio with links and descriptions
-  education: Education[];      // Universities, degrees, SGPA
-  extracurricular: string[];   // Activities and hobbies
-  customSections: CustomSection[];  // Flexible sections (Certifications, etc.)
+  personalInfo: PersonalInfo;   // name, title, email, location, github, linkedin, twitter, spotifyUrl, imageUrl
+  summary: string;
+  skills: Skills;               // languages[], frameworksAndTools[], softSkills[]
+  experience: Experience[];     // company, position, startDate, endDate, description[], technologies[]
+  projects: Project[];          // name, role, link, description[], technologies[]
+  education: Education[];       // university, degree, branch, sgpa, startDate, endDate
+  extracurricular: string[];
+  customSections: CustomSection[]; // { title, items[] }
 }
 ```
 
-### Helper Functions
-
-**File:** [helpers.ts](file:///d:/My%20Learnings/Next%20js/wrkks/lib/helpers.ts)
-
-| Function | Purpose |
-|---|---|
-| `normalizeResume(raw)` | Takes raw AI-generated JSON and ensures all fields exist with safe defaults (no `undefined` crashes) |
-| `normalizeUrl(input)` | Adds `https://` prefix if missing |
-
-### npm Scripts
-
-```bash
-pnpm dev      # Start dev server at localhost:3000
-pnpm build    # Create production build
-pnpm start    # Run production server
-pnpm lint     # Run ESLint
-```
-
 ---
 
-## 17. Recent Migrations
+## 10. Environment Variables
 
-### Database: Supabase → PostgreSQL (`pg`)
-
-**What changed:**
-- Replaced `@supabase/ssr` with native `pg` (node-postgres)
-- Created `lib/db/postgres.ts` — connection pool for server-side queries
-- Updated `lib/supabase/server.ts` — now exports PostgreSQL helper functions (`getUserByClerkId`, `createUser`, `updateUserByClerkId`, etc.)
-- Updated all API routes to use raw SQL queries instead of Supabase SDK
-- Middleware simplified — no Supabase auth cookies needed (Clerk handles auth)
-
-**Environment variable:**
 ```env
-DATABASE_URL=postgresql://user:password@localhost:5432/dbname
-```
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=
 
-**PostgreSQL schema:**
-```sql
-CREATE TABLE users (
-  id SERIAL PRIMARY KEY,
-  clerk_user_id TEXT UNIQUE NOT NULL,
-  username TEXT UNIQUE NOT NULL,
-  email TEXT NOT NULL,
-  resume JSONB,
-  islive BOOLEAN DEFAULT false,
-  style TEXT DEFAULT 'simple',
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-```
+# Clerk
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
 
-### AI Provider: OpenRouter → Ollama (Local)
-
-**What changed:**
-- Replaced OpenAI SDK with native `fetch()` to local Ollama API
-- Updated `app/api/extract-info/route.ts` — now calls `http://localhost:11434/api/chat`
-- Removed OpenAI/OpenRouter dependencies from this file
-
-**Environment variables:**
-```env
+# Ollama (local AI)
 OLLAMA_URL=http://localhost:11434
 OLLAMA_MODEL=llama3.2
+
+# App
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
 ```
-
-### Auth: Clerk Dev Mode Bypass
-
-**What changed:**
-- `app/layout.tsx` conditionally skips `ClerkProvider` in development mode
-- `SyncUser` component only runs in production
-- Allows local development without Clerk setup
 
 ---
 
-> [!TIP]
-> **Best way to explore this codebase:** Start by running `pnpm dev`, then trace the user flow — go to `/upload`, upload a PDF, and follow the code path through `GenerateBtn` → `actions.ts` → API routes → Zustand store → `/website` page → `ResumePreview` → `ResumeCard`.
+## 11. Design System
 
-<!-- code-review-graph MCP tools -->
+- **Font:** Bricolage Grotesque (headlines/body) + Geist Mono (labels, mono elements)
+- **Accent color:** Emerald green (`emerald-500/600`) throughout the app UI
+- **Background:** CSS variables — cream in light mode, near-black in dark mode
+- **Animations:** CSS keyframes (`animate-slide-up`, `animate-fade-in`) defined in `globals.css`
+- **Grid background:** Used on Hero and Upload pages for "blueprint" aesthetic
+- **Navbar:** Sticky, `backdrop-blur-md`, frosted glass effect
+
+AI tool buttons use distinct accent colors to differentiate them visually:
+- Emerald → Enhancement Tips, Summary Writer
+- Blue → Job Match
+- Violet → Tagline Generator
+- Orange → ATS Check
+- Rose → Cover Letter
+
+---
+
 ## MCP Tools: code-review-graph
 
 **IMPORTANT: This project has a knowledge graph. ALWAYS use the

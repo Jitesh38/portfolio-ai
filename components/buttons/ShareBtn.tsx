@@ -24,8 +24,8 @@ export default function ShareBtn() {
       }
 
       const shareData = {
-        title: "Wrkks - Resume to Website",
-        text: "Check out my professional site built with Wrkks!",
+        title: "Portfolio AI - Resume to Website",
+        text: "Check out my professional site built with Portfolio AI!",
         url: shareUrl,
       };
 
@@ -62,7 +62,7 @@ export default function ShareBtn() {
         <Share2 className="mr-2 h-4 w-4 transition-transform group-hover:scale-110" />
       )}
       <span>
-        {loading ? "Generating..." : isCopied ? "Copied!" : "Share My Wrkk"}
+        {loading ? "Generating..." : isCopied ? "Copied!" : "Share My Portfolio"}
       </span>
     </Button>
   );

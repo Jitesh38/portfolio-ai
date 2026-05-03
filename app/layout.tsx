@@ -19,10 +19,10 @@ const geistMono = Geist_Mono({
 });
 
 const siteConfig = {
-  name: "Wrkks",
+  name: "Portfolio AI",
   description:
     "Turn your resume into a stunning personal website in seconds. Import from LinkedIn or PDF to create a professional online presence instantly—no coding required.",
-  url: process.env.NEXT_PUBLIC_BASE_URL ?? "https://wrkks.site", // Replace with your production URL
+  url: process.env.NEXT_PUBLIC_BASE_URL ?? "https://portfolio-ai.site", // Replace with your production URL
   ogImage: "/og-image.png",
   links: {
     twitter: "https://twitter.com/utkarshdev_",
@@ -32,7 +32,7 @@ const siteConfig = {
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: "Wrkks – Turn Your Resume into a Professional Website in Seconds",
+    default: "Portfolio AI – Turn Your Resume into a Professional Website in Seconds",
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
@@ -53,13 +53,13 @@ export const metadata: Metadata = {
     "digital resume website",
 
     // Brand Keywords
-    "Wrkks builder",
-    "Wrkks portfolio",
-    "Wrkks resume",
+    "Portfolio AI builder",
+    "Portfolio AI portfolio",
+    "Portfolio AI resume",
   ],
-  authors: [{ name: "Utkarsh", url: "https://github.com/dev-o-los" }],
+  authors: [{ name: "Jitesh", url: "https://github.com/Jitesh38" }],
   creator: "Utkarsh",
-  publisher: "Wrkks",
+  publisher: "Portfolio AI",
   alternates: {
     canonical: "/",
   },
@@ -71,7 +71,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: siteConfig.url,
-    title: "Wrkks – Instant Personal Websites from Your Resume",
+    title: "Portfolio AI – Instant Personal Websites from Your Resume",
     description:
       "Stop sending PDFs. Start sending links. Convert your resume or LinkedIn profile into a stunning, high-converting personal website instantly.",
     siteName: siteConfig.name,
@@ -80,13 +80,13 @@ export const metadata: Metadata = {
         url: siteConfig.ogImage,
         width: 1200,
         height: 630,
-        alt: "Wrkks - Resume to Website Converter Preview",
+        alt: "Portfolio AI - Resume to Website Converter Preview",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Wrkks – The Fastest Way to Build Your Personal Brand",
+    title: "Portfolio AI – The Fastest Way to Build Your Personal Brand",
     description:
       "Import your resume and get a professional website in seconds. No design skills needed.",
     images: [siteConfig.ogImage],
@@ -113,7 +113,7 @@ export default function RootLayout({
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    name: "Wrkks",
+    name: "Portfolio AI",
     description:
       "Convert your resume PDF or LinkedIn profile into a stunning personal website in seconds.",
     applicationCategory: "DesignApplication",
@@ -125,7 +125,7 @@ export default function RootLayout({
     },
     author: {
       "@type": "Person",
-      name: "Utkarsh",
+      name: "Jitesh",
     },
     featureList: [
       "LinkedIn profile import",
@@ -140,6 +140,7 @@ export default function RootLayout({
       <html lang="en" suppressHydrationWarning>
         <body
           className={`${bricolage.className} ${geistMono.variable} antialiased`}
+          suppressHydrationWarning
         >
           <TanStackQueryProvider>
             <ToastProvider>
